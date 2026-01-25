@@ -2,47 +2,50 @@ package com.pedidos.backend_pedidos.controller;
 
 import com.pedidos.backend_pedidos.dto.ReporteFinancieroDTO;
 import com.pedidos.backend_pedidos.model.Pedido;
+import com.pedidos.backend_pedidos.repository.PedidoRepository;
 import com.pedidos.backend_pedidos.service.PedidoService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
-@RestController // 1. "Soy un Camarero" (Recibo peticiones HTTP)
-@RequestMapping("/api/pedidos") // 2. Todas mis URLs empezarán con esta dirección base
+@RestController
+@RequestMapping("/api/pedidos")
+@CrossOrigin(origins = "*") // Permite que el celular y el PC se conecten sin problemas
 public class PedidoController {
 
     private final PedidoService pedidoService;
+    private final PedidoRepository pedidoRepository;
 
-    // Inyectamos el servicio (El camarero necesita acceso a la cocina)
-    public PedidoController(PedidoService pedidoService) {
+    public PedidoController(PedidoService pedidoService, PedidoRepository pedidoRepository) {
         this.pedidoService = pedidoService;
+        this.pedidoRepository = pedidoRepository;
     }
 
-    // ENDPOINT 1: Guardar un nuevo pedido
-    // URL: POST http://localhost:8080/api/pedidos
-    // El JSON que envíes desde Swing se convertirá automáticamente en un objeto Pedido
+    // 1. GUARDAR (POST)
     @PostMapping
-    public Pedido guardar(@RequestBody Pedido pedido) {
+    public Pedido crearPedido(@RequestBody Pedido pedido) {
         return pedidoService.guardarPedido(pedido);
     }
 
-    // ENDPOINT 2: Obtener reporte de ganancias
-    // URL: GET http://localhost:8080/api/pedidos/reporte?inicio=2025-01-01&fin=2025-01-31
+    // 2. LISTAR TODOS (GET) -> ¡ESTO ES LO QUE FALTABA PARA EL ERROR 405!
+    @GetMapping
+    public List<Pedido> listarTodos() {
+        return pedidoRepository.findAll();
+    }
+
+    // 3. REPORTE FINANCIERO (GET con fechas)
     @GetMapping("/reporte")
     public ReporteFinancieroDTO obtenerReporte(
-            @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
-            @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin
-    ) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
         return pedidoService.calcularGanancias(inicio, fin);
     }
 
-    // ENDPOINT 3: Borrar un pedido por ID
-    // URL: DELETE http://localhost:8080/api/pedidos/{id}
+    // 4. ELIMINAR (DELETE)
     @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
-        // Usamos el método que ya trae JPA por defecto
-        pedidoService.eliminarPedido(id); 
+    public void eliminarPedido(@PathVariable Long id) {
+        pedidoService.eliminarPedido(id);
     }
-
 }
