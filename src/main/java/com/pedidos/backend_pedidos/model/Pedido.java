@@ -11,25 +11,19 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "cantidad_items", nullable = false)
-    private Integer cantidadItems;
-
-    @Column(nullable = false)
-    private LocalDate fecha; // Solo guarda Año-Mes-Día
-
-    // NUEVO CAMPO: true = fin de semana/tarifa alta, false = día normal
-    @Column(name = "es_tarifa_alta", nullable = false)
+    private int cantidadItems;
+    private LocalDate fecha;
     private boolean esTarifaAlta;
-
-    // --- CONSTRUCTORES ---
+    private double ingresoTotal; 
 
     public Pedido() {
     }
 
-    // Este constructor nos permitirá crear pedidos con una fecha específica (pasada o actual)
-    public Pedido(Integer cantidadItems, LocalDate fecha) {
+    public Pedido(int cantidadItems, LocalDate fecha, boolean esTarifaAlta) {
         this.cantidadItems = cantidadItems;
         this.fecha = fecha;
+        this.esTarifaAlta = esTarifaAlta;
+        this.ingresoTotal = 0.0; // Inicializamos en 0
     }
 
     // --- GETTERS Y SETTERS ---
@@ -42,11 +36,11 @@ public class Pedido {
         this.id = id;
     }
 
-    public Integer getCantidadItems() {
+    public int getCantidadItems() {
         return cantidadItems;
     }
 
-    public void setCantidadItems(Integer cantidadItems) {
+    public void setCantidadItems(int cantidadItems) {
         this.cantidadItems = cantidadItems;
     }
 
@@ -65,5 +59,12 @@ public class Pedido {
     public void setEsTarifaAlta(boolean esTarifaAlta) {
         this.esTarifaAlta = esTarifaAlta;
     }
+    
+    public double getIngresoTotal() {
+        return ingresoTotal;
+    }
 
+    public void setIngresoTotal(double ingresoTotal) {
+        this.ingresoTotal = ingresoTotal;
+    }
 }
