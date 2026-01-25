@@ -48,4 +48,12 @@ public class PedidoController {
     public void eliminarPedido(@PathVariable Long id) {
         pedidoService.eliminarPedido(id);
     }
+
+    // Endpoint de emergencia para arreglar la base de datos
+    @GetMapping("/fix-montos")
+    public String repararMontos() {
+        pedidoService.recalcularTodosLosPrecios();
+        return "¡Éxito! Se han recalculado los precios de todos los pedidos históricos.";
+    }
+
 }

@@ -98,4 +98,23 @@ public class PedidoService {
     public void eliminarPedido(Long id) {
         pedidoRepository.deleteById(id);
     }
+
+    // --- MÉTODO DE REPARACIÓN DE DATOS ---
+    public void recalcularTodosLosPrecios() {
+        // 1. Traer todos los pedidos de la historia
+        List<Pedido> todos = pedidoRepository.findAll();
+
+        // 2. Recorrer uno por uno
+        for (Pedido p : todos) {
+            // 3. Aplicar la fórmula matemática
+            double costoReal = calcularCostoPedido(p);
+            
+            // 4. Actualizar el valor en memoria
+            p.setIngresoTotal(costoReal);
+            
+            // 5. Guardar en base de datos
+            pedidoRepository.save(p);
+        }
+    }
+
 }
