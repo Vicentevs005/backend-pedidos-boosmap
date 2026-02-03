@@ -22,7 +22,7 @@ public class PedidoService {
     private static final double BASE_NORMAL = 1300.0;        // Lunes a Viernes, o Sábados normales
 
     // 2. PRECIOS POR ÍTEM (El pago por cada paquete)
-    private static final double ITEM_ALTO = 140.0;           // Si marcas "Tarifa Alta" (Alta demanda)
+    private static final double ITEM_ALTO = 120.0;           // Si marcas "Tarifa Alta" (Alta demanda)
     private static final double ITEM_NORMAL = 80.0;          // Si NO marcas "Tarifa Alta" (Normal)
 
     // 3. DATOS FISCALES (Retención SII)
@@ -47,35 +47,39 @@ public class PedidoService {
     }
 
     // --- LÓGICA DE CÁLCULO (El cerebro del sistema) ---
-    private double calcularCostoPedido(Pedido p) {
-        DayOfWeek dia = p.getFecha().getDayOfWeek();
-        boolean esAltaDemanda = p.isEsTarifaAlta(); // Esto es el checkbox de la interfaz
+    // --- LÓGICA FINANCIERA CORREGIDA (PICKER) ---
+    private double calcularCostoPedido(Pedido pedido) {
+        // 1. Determinar si es Domingo
+        LocalDate fecha = pedido.getFecha();
+        boolean esDomingo = (fecha.getDayOfWeek() == java.time.DayOfWeek.SUNDAY);
+        boolean esTarifaAlta = pedido.isEsTarifaAlta();
+        int cantidadItems = pedido.getCantidadItems();
 
-        // PASO 1: Determinar precio del ÍTEM
-        // Depende SOLO de si hay alta demanda o no.
-        // Si marcas el checkbox es 140, si no marcas es 80.
-        // (Esto cumple la regla: Domingo sin alta demanda paga items a 80)
-        double precioPorItem = esAltaDemanda ? ITEM_ALTO : ITEM_NORMAL;
+        double valorBase;
+        double valorPorItem;
 
-        // PASO 2: Determinar precio BASE
-        // Depende del DÍA y, en caso del sábado, de la demanda.
-        double precioBase;
-
-        if (dia == DayOfWeek.SUNDAY) {
-            // Regla Suprema: Domingo siempre paga 1800 de base
-            precioBase = BASE_DOMINGO;
-        } 
-        else if (dia == DayOfWeek.SATURDAY && esAltaDemanda) {
-            // Sábado con alta demanda paga 1400
-            precioBase = BASE_SABADO_ALTO;
-        } 
-        else {
-            // Cualquier otro caso (Lunes-Viernes o Sábado normal) paga 1300
-            precioBase = BASE_NORMAL;
+        // A. Calcular el valor de cada Item
+        if (esTarifaAlta) {
+            valorPorItem = 120;
+        } else {
+            valorPorItem = 80;
         }
 
-        // PASO 3: Suma del precio final
-        return precioBase + (p.getCantidadItems() * precioPorItem);
+        // B. Calcular la Base del Pedido
+        if (esDomingo) {
+            // Domingos siempre base 1800 (sea alta o baja)
+            valorBase = 1800;
+        } else {
+            // Lunes a Sábado
+            if (esTarifaAlta) {
+                valorBase = 1400; // Sube base en día de alta demanda
+            } else {
+                valorBase = 1300; // Base normal
+            }
+        }
+
+        // C. Fórmula Final
+        return valorBase + (cantidadItems * valorPorItem);
     }
 
     // --- GENERACIÓN DE REPORTES (Esto no cambia) ---
